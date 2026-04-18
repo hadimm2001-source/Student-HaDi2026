@@ -119,8 +119,14 @@
     </main>
 
     <!-- Footer -->
-    <footer class="py-8 text-center text-sm font-bold text-slate-400 border-t border-slate-200/60 bg-white/50 backdrop-blur-sm mt-auto no-print">
-        نظام التقويم المدرسي | الموجه الطلابي: عبدالهادي بن محمد المحسن | &copy; 2026
+    <footer class="py-8 text-center text-sm font-bold text-slate-400 border-t border-slate-200/60 bg-white/50 backdrop-blur-sm mt-auto no-print flex flex-col items-center justify-center">
+        <p>نظام التقويم المدرسي | الموجه الطلابي: عبدالهادي بن محمد المحسن | &copy; 2026</p>
+        
+        <!-- الزر السحري للمطور لاستخراج الروابط -->
+        <button onclick="openExportModal()" class="mt-4 flex items-center justify-center gap-2 text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors border border-indigo-100 font-bold">
+            <i data-lucide="code" class="w-4 h-4"></i>
+            <span>تصدير الروابط لتثبيتها (للمطور)</span>
+        </button>
     </footer>
 
     <!-- Modals Container -->
@@ -176,6 +182,24 @@
             </div>
         </div>
 
+        <!-- Export (Developer) Modal -->
+        <div id="export-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60] transition-opacity duration-300 opacity-0">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-8 relative transform scale-95 transition-transform duration-300" id="export-modal-content">
+                <button onclick="closeExportModal()" class="absolute top-6 left-6 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+                <h3 class="text-2xl font-black text-slate-800 mb-2">تثبيت الروابط في الموقع</h3>
+                <p class="text-slate-500 text-sm mb-6 font-medium">لكي يرى المدير الروابط، انسخ هذا الكود بالكامل، ثم افتح ملف <code class="bg-slate-100 text-indigo-600 px-2 py-1 rounded">index.html</code> في جهازك (عبر المفكرة Notepad) واستبدل الأقواس <code class="bg-slate-100 text-indigo-600 px-2 py-1 rounded">const preSavedReports = { }</code> بهذا الكود ثم ارفعه مجدداً إلى GitHub.</p>
+                
+                <textarea id="export-textarea" readonly dir="ltr" class="w-full h-64 p-4 bg-slate-800 text-emerald-400 font-mono text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4 resize-none"></textarea>
+                
+                <button onclick="copyExportedCode()" class="w-full px-4 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-bold transition-all duration-300 flex justify-center items-center gap-2 shadow-lg shadow-indigo-200 active:scale-95 text-lg">
+                    <i data-lucide="copy" class="w-5 h-5"></i>
+                    <span>نسخ الكود</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Toast Notification -->
         <div id="toast" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 z-[100] transition-all duration-300 transform translate-y-8 opacity-0 text-white">
             <i data-lucide="check-circle" id="toast-icon" class="w-5 h-5"></i>
@@ -191,6 +215,40 @@
 
     <!-- Application Logic -->
     <script>
+        // =================================================================================
+        // ⚠️ منطقة المطور: الصق الكود المنسوخ من زر "تصدير الروابط" بداخل هذه الأقواس ⚠️
+        // =================================================================================
+        const preSavedReports = {
+            "3-1-2-1-برنامج التهيئة النفسية": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQCw1A0YX72FQKYaKhQQpMynAW_8ibsKOqROxHKjt0LfB0w?e=tzP9bX",
+            "3-1-2-1-برنامج خفض العنف (رفق)": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQC8LBHuE-zKQqI5xwOszDIbAc0Sic8XouSMW2LEzffBRHw?e=uflKcQ",
+            "3-1-2-1-برنامج الإرشاد وقت الأزمات": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQCQjh0Tp_WYTo7OGhwOm4EQAYEpUBkThmdBAgYFrYfAXJw?e=XfhyH1",
+            "3-1-2-1-برنامج الوقاية النفسية الأولية في البيئة المدرسية": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQDi6A64YjUaRJHncfFxli57AeKu21mbZ4CdXVfnsKwFzX0?e=nRTdOQ",
+            "1-2-1-4-أداة قواعد السلوك والمواظبة": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQBjZX0FLKxbT753xK9x4rA3ASBi0DtdJzFq61JAzniuNbs?e=0x4YNh",
+            "1-2-1-4-خدمة رعاية الطلبة متكرري الغياب والتأخر الصباحي": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQBQINv8eGUQSr276jqicaKVAanjfM1uHHde6QPK4zr2-RE?e=DcjE7i",
+            "1-2-1-4-مجالس أولياء الأمور": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQCCYsAPQjprQY-t2yYKVQksAadh3sZdgRfSd8IxHaXa0Lo?e=FAjQmS",
+            "3-2-1-5-تعزيز قيمة الانضباط المدرسي والتميز السلوكي": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQBfVixWv8bxQLF6pZunSG7yAQR0s0EAREt9YaT72sZdKyY?e=yxEgAs",
+            "1-2-1-5-برنامج تعزيز السلوك الإيجابي": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQCaHaLq-DwgT69w3U41fA-QAefUs1dWVFaSaX7iwHAyq7I?e=dMc2tX",
+            "1-2-1-6-خدمة رعاية ودعم الحالات الخاصة (فئة الموهوبين)": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQD2sVBQh_hATrmxpFE-n5I_ARJsi6fGYfPSF_kwEbhrw8U?e=cVT4F9",
+            "1-2-1-6-برنامج التوجيه المهني": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQBKGvV03yX_S7Ek7rgPofqkAdWHIAPaQ25pXRtGBT-esKU?e=Y8yWoj",
+            "2-1-3-1-برنامج التوجيه المهني": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQBKGvV03yX_S7Ek7rgPofqkAdWHIAPaQ25pXRtGBT-esKU?e=Y8yWoj",
+            "2-1-3-1-برنامج توثيق علاقة الأسرة مع المدرسة": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQDLmtNGGvgESpm7AXijDYukAdOqtp-6JjmXapMmwu42K0A?e=xZGwr4",
+            "2-1-3-1-الاحتفاء بالطلبة الخريجين": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQDYXq2syY6uTaolNpziG3j8AWUkeDDc48nwTnc45irDQRg?e=5Nr0oq",
+            "2-1-1-8-برنامج تعزيز المهارات النفسية للطلبة (الوعي الذاتي، الإدارة الذاتية، اتخاذ القرار..)": "https://estboys-my.sharepoint.com/:i:/g/personal/sa9722317_estb_moe_gov_sa/IQCXN_3eDTo4SryedVKzGuinAa7HDJmvTc4E0HVqRn5sxm0?e=AfyqjR",
+            "2-1-1-8-المجلس الطلابي": "https://estboys-my.sharepoint.com/:i:/g/personal/sa9722317_estb_moe_gov_sa/IQDVIguff8WhQ7hPjDvq15EPAdC_w5PXupNGJez0fPWa5MQ?e=6fnbUK",
+            "2-1-1-9-برنامج الاستخدام الآمن للإنترنت والألعاب الإلكترونية": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQCKauZXANprS6pfCgwgTLD3AWItKbxjQg3jmsY0eZVAwL4?e=UxxNEy",
+            "2-1-1-9-قواعد السلوك (آداب السلوك الرقمي)": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQAWDt-kGKODT5e6buwln5QeAf19Uw3KSELsfJmLYlqHPJ4?e=jzwbpv",
+            "2-1-1-10-برنامج تنمية الدافعية لرفع مستوى التحصيل الدراسي": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQAaWG_vqwCqSqBrLFghC_iUAbKUbdXmZk-FxF04hxCldzM?e=CWDjKS",
+            "2-1-1-10-رعاية الطلبة المتأخرين دراسياً": "https://estboys-my.sharepoint.com/:i:/g/personal/sa9722317_estb_moe_gov_sa/IQARBBHQ-rdpSYsatLE2Mbi1ASLgHVQJlMmsJzyHd92jmuw?e=k4Do70",
+            "2-1-1-10-برنامج تكريم الطلبة المتفوقين": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQAaHHW3zwscQrS5VZz2GT9cAbNwbHK5H4hjC86pTI2NHBQ?e=Ler8RT",
+            "3-2-1-1-تعزيز السلوك الإيجابي (قيمة الانتماء للوطن)": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQBerR1ImUrCSoSIw197pItQAR8Iiz1yUk9iPcc-1WYfPCs?e=UTifMJ",
+            "3-2-1-1-قواعد السلوك (المحافظة على ارتداء الزي الوطني)": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQAn7Svvyp0lSqdkka8r-LaAAYnZCN-RuwTGpKCzLVHfV_4?e=pqLdbq",
+            "3-2-1-2-برنامج تعزيز المهارات النفسية للطلبة": "https://estboys-my.sharepoint.com/:i:/g/personal/sa9722317_estb_moe_gov_sa/IQCXN_3eDTo4SryedVKzGuinAa7HDJmvTc4E0HVqRn5sxm0?e=nodJy0",
+            "3-2-1-2-ملف دراسة الحالة": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQDg5K7uAOzQSJ4KvZodiNQXAU0HqJwbpmmi8pUcbzuaCjg?e=dbinBC",
+            "3-2-1-2-جلسات الإرشاد الفردية والجماعية": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQBQINv8eGUQSr276jqicaKVAanjfM1uHHde6QPK4zr2-RE?e=Bt8BYZ",
+            "3-2-1-7-تعزيز السلوك الإيجابي (قيمة التسامح)": "https://estboys-my.sharepoint.com/:b:/g/personal/sa9722317_estb_moe_gov_sa/IQD5wyirJyZ4TZ9LgGpw0edlAUcU3AJYP6CuUxsrkHkK7RY?e=5egeIR"
+        };
+        // =================================================================================
+
         // Data Configuration
         const pdfData = [
             { id: '3-1-2-1', domain: 'الإدارة المدرسية', standard: 'قيادة العملية التعليمية', indicator: 'توفر المدرسة مناخاً آمناً للتعلم والنمو نفسياً واجتماعياً', progress: 96, programs: ['برنامج التهيئة النفسية', 'برنامج خفض العنف (رفق)', 'برنامج الإرشاد وقت الأزمات', 'برنامج الوقاية النفسية الأولية في البيئة المدرسية'] },
@@ -213,28 +271,21 @@
         let currentUploadContext = { indicatorId: '', programName: '' };
         let activeIndicator = null;
         
-        // Storage Sync Layer
+        // Storage Sync Layer: يدمج الروابط المخبوزة (preSavedReports) مع الروابط المحلية
         let oldReports = {};
         try {
             const oldDataRaw = localStorage.getItem('uploadedReports'); 
-            if (oldDataRaw) {
-                oldReports = JSON.parse(oldDataRaw);
-            }
-        } catch (e) {
-            console.warn('Failed to parse old storage');
-        }
+            if (oldDataRaw) oldReports = JSON.parse(oldDataRaw);
+        } catch (e) { }
         
         let newReports = {};
         try {
             const newDataRaw = localStorage.getItem('reports_v1');
-            if (newDataRaw) {
-                newReports = JSON.parse(newDataRaw);
-            }
-        } catch (e) {
-            console.warn('Failed to parse new storage');
-        }
+            if (newDataRaw) newReports = JSON.parse(newDataRaw);
+        } catch (e) { }
         
-        let uploadedReports = Object.assign({}, oldReports, newReports);
+        // هنا يتم دمج الروابط الثابتة مع الروابط المحفوظة مسبقاً
+        let uploadedReports = Object.assign({}, preSavedReports, oldReports, newReports);
         localStorage.setItem('reports_v1', JSON.stringify(uploadedReports));
 
         // Generate Unique Domains
@@ -549,6 +600,40 @@
             renderProgramsModalContent();
             renderStats();
             showToast('تم حذف التقرير، يمكنك إعادة إرفاق رابط جديد', 'error');
+        }
+
+        // --- Export Feature Logic ---
+        window.openExportModal = function() {
+            const modal = document.getElementById('export-modal');
+            const content = document.getElementById('export-modal-content');
+            const textarea = document.getElementById('export-textarea');
+            
+            // Generate clean JSON code snippet
+            textarea.value = `const preSavedReports = ${JSON.stringify(uploadedReports, null, 4)};`;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        window.closeExportModal = function() {
+            const modal = document.getElementById('export-modal');
+            const content = document.getElementById('export-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        window.copyExportedCode = function() {
+            const textarea = document.getElementById('export-textarea');
+            textarea.select();
+            document.execCommand('copy');
+            showToast('تم نسخ الكود بنجاح! الصقه الآن في ملف index.html');
+            closeExportModal();
         }
 
         // Initialize App
